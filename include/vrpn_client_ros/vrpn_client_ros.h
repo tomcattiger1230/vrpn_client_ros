@@ -79,10 +79,10 @@ namespace vrpn_client_ros
 
   private:
     TrackerRemotePtr tracker_remote_;
-    std::vector<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr > pose_pubs_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
     //std::vector<ros::Publisher> pose_pubs_, twist_pubs_, accel_pubs_;
     rclcpp::Node::SharedPtr output_nh_;
-    bool use_server_time_, broadcast_tf_;
+    bool use_server_time_, broadcast_tf_, mainloop_executed_;
     std::string tracker_name;
 
     rclcpp::TimerBase::SharedPtr mainloop_timer;

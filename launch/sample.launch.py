@@ -1,7 +1,17 @@
+from pathlib import Path
+
+from ament_index_python.packages import get_package_share_directory
 import launch
 import launch.actions
 import launch.substitutions
 import launch_ros.actions
+
+
+parameters_file_path = Path(
+    get_package_share_directory('vrpn_client_ros'),
+    'config',
+    'sample.params.yaml'
+)
 
 
 def generate_launch_description():
@@ -11,6 +21,6 @@ def generate_launch_description():
             node_executable='vrpn_client_node',
             output='screen',
             emulate_tty=True,
-            parameters=["sample.conf.yaml"],
+            parameters=[parameters_file_path],
         ),
     ])

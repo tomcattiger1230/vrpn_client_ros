@@ -37,6 +37,7 @@
 
 #include "rclcpp/logging.hpp"
 
+#include <iostream>  // TODO: only for debug, remove
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
@@ -111,7 +112,7 @@ namespace vrpn_client_ros
 
     this->tracker_name = tracker_name;
 
-    output_nh_ = nh;
+    output_nh_ = nh->create_sub_node(tracker_name);
 
     std::string frame_id;
     nh->get_parameter("frame_id", frame_id);
@@ -140,25 +141,27 @@ namespace vrpn_client_ros
   void VrpnTrackerRos::mainloop()
   {
     tracker_remote_->mainloop();
+    mainloop_executed_ = false;
   }
 
   void VRPN_CALLBACK VrpnTrackerRos::handle_pose(void *userData, const vrpn_TRACKERCB tracker_pose)
   {
     VrpnTrackerRos *tracker = static_cast<VrpnTrackerRos *>(userData);
 
-    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub;
-    std::size_t sensor_index(0);
+    if(tracker->mainloop_executed_) {
+        RCLCPP_WARN(
+            tracker->output_nh_->get_logger(), 
+            "VRPN update executed multiple times for single mainloop run. Try to adjust your VRPN provider settings."
+        );
+        return;
+    }
+    tracker->mainloop_executed_ = true;
+
     rclcpp::Node::SharedPtr nh = tracker->output_nh_;
     
-    if (tracker->pose_pubs_.size() <= sensor_index)
+    if (!tracker->pose_pub_)
     {
-      tracker->pose_pubs_.resize(sensor_index + 1);
-    }
-    pose_pub = tracker->pose_pubs_[sensor_index];
-
-    if (!pose_pub)
-    {
-      pose_pub = nh->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 1);
+      tracker->pose_pub_ = nh->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 1);
     }
 
     if (tracker->use_server_time_)
@@ -180,7 +183,7 @@ namespace vrpn_client_ros
     tracker->pose_msg_.pose.orientation.z = tracker_pose.quat[2];
     tracker->pose_msg_.pose.orientation.w = tracker_pose.quat[3];
 
-    pose_pub->publish(tracker->pose_msg_);
+    tracker->pose_pub_->publish(tracker->pose_msg_);
     
 
     // if (tracker->broadcast_tf_)
