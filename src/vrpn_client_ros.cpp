@@ -37,7 +37,6 @@
 
 #include "rclcpp/logging.hpp"
 
-#include <iostream>  // TODO: only for debug, remove
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
