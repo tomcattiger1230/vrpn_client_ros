@@ -148,9 +148,9 @@ namespace vrpn_client_ros
     VrpnTrackerRos *tracker = static_cast<VrpnTrackerRos *>(userData);
 
     if(tracker->mainloop_executed_) {
-        RCLCPP_WARN(
+        RCLCPP_WARN_ONCE(
             tracker->output_nh_->get_logger(), 
-            "VRPN update executed multiple times for single mainloop run. Try to adjust your VRPN provider settings."
+            "VRPN update executed multiple times for single mainloop run. Try to adjust your VRPN server settings."
         );
         return;
     }
